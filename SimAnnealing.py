@@ -433,4 +433,8 @@ class Gibs:
 
 
 g = Gibs()
-g.main()
+sch = g.calculate_cpm(g.early_start_time, g.early_final_time)
+for i in sch.keys():
+    print(i + ' : ', sch[i])
+    g.calculate_net_present_value(sch[i])
+#g.main()

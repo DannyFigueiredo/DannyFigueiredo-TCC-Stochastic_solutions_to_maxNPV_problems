@@ -123,13 +123,13 @@ class HillClimbing:
         self.num_steepest_ascent = 0
 
         # Function timer
-        #self.timer_calculate_net_present_value = datetime(2022, 1, 1, 0, 0, 0, 0)
-        #self.timer_calculate_cpm_foward = datetime(2022, 1, 1, 0, 0, 0, 1)
-        #self.timer_calculate_cpm_backward = datetime(2022, 1, 1, 0, 0, 0, 0)
-        #self.timer_calculate_cpm = datetime(2022, 1, 1, 0, 0, 0, 0)
-        #self.timer_validation_path = datetime(2022, 1, 1, 0, 0, 0, 0)
-        #self.timer_find_neighbour_schedule = datetime(2022, 1, 1, 0, 0, 0, 0)
-        #self.timer_simulated_annealing = datetime(2022, 1, 1, 0, 0, 0, 0)
+        # self.timer_calculate_net_present_value = datetime(2022, 1, 1, 0, 0, 0, 0)
+        # self.timer_calculate_cpm_foward = datetime(2022, 1, 1, 0, 0, 0, 1)
+        # self.timer_calculate_cpm_backward = datetime(2022, 1, 1, 0, 0, 0, 0)
+        # self.timer_calculate_cpm = datetime(2022, 1, 1, 0, 0, 0, 0)
+        # self.timer_validation_path = datetime(2022, 1, 1, 0, 0, 0, 0)
+        # self.timer_find_neighbour_schedule = datetime(2022, 1, 1, 0, 0, 0, 0)
+        # self.timer_simulated_annealing = datetime(2022, 1, 1, 0, 0, 0, 0)
 
     # ============================================================================= #
     #                             Critical Path Method                              #
@@ -224,14 +224,16 @@ class HillClimbing:
         # counter to know how many times the function was called
         self.num_calculate_net_present_value += 1
 
-        npv_activity = np.zeros(self.project_size)
-        for i in range(0, self.project_size):
-            npv = self.activity_cash_flow_array[i] * np.exp(-self.rate * (schedules[i] + self.activity_duration_array[i]))
-            npv_activity[i] = npv
+        return sum(self.activity_cash_flow_array * np.exp(-self.rate * (schedules + self.activity_duration_array)))
 
-        a = sum(npv_activity)
-
-        return a
+        # npv_activity = np.zeros(self.project_size)
+        # for i in range(0, self.project_size):
+        #     npv = self.activity_cash_flow_array[i] * np.exp(-self.rate * (schedules[i] + self.activity_duration_array[i]))
+        #     npv_activity[i] = npv
+        #
+        # a = sum(npv_activity)
+        #
+        # return a
 
     # ======================== #
     #   Validation Functions   #
@@ -335,7 +337,7 @@ class HillClimbing:
         for i in r1.keys():
             print(i + ' : ', r1[i])
 
-        r2 = self.steepest_ascent(r1['early_start_time'])
+        #r2 = self.steepest_ascent(r1['early_start_time'])
         #print('npv : ', r2['npv'])
         #for i in r2.keys():
         #    print(i + ' : ', r2[i])

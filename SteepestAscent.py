@@ -1,12 +1,10 @@
-import random
-from datetime import datetime as dt
 import numpy as np
-from random import sample, seed
+from datetime import datetime as dt
+from random import sample
 import seaborn as sns
-import matplotlib.pyplot as plt
 
 
-class Gibs:
+class HillClimbing:
     """
     This class represents the graph of a project through dictionaries of: nodes and their successors,
     duration of each activity and the cash flow of each activity.
@@ -116,17 +114,6 @@ class Gibs:
         self.early_final_time = np.zeros(self.project_size)
         self.later_start_time = np.zeros(self.project_size)
         self.later_final_time = np.array([self.deadline]*self.project_size)
-
-        # Function counters
-        self.num_calculate_net_present_value = 0
-        self.num_calculate_cpm_foward = 0
-        self.num_calculate_cpm_backward = 0
-        self.num_calculate_cpm = 0
-        self.num_validation_path = 0
-        self.num_validation_deadline_activity = 0
-        self.num_find_neighbour_schedule = 0
-        self.num_simulated_annealing = 0
-
 
     # =============================== #
     #   Parameter Setting Functions   #
@@ -445,9 +432,6 @@ class Gibs:
         Calculates net present value for earlier start time scheduling
         :param schedules: early start schedule list in np.array in np.array type
         """
-        # counter to know how many times the function was called
-        self.num_calculate_net_present_value += 1
-
         est_schedule = sum(schedules, self.activity_duration_array)
         return sum(self.activity_cash_flow_array * np.exp(-self.rate * est_schedule))
 
@@ -475,8 +459,6 @@ class Gibs:
         :param eft: early final time list
         :return: early start time calculated
         """
-        self.num_calculate_cpm_foward += 1
-
         eft[initial_activity] = est[initial_activity] + self.activity_duration_array[initial_activity][0]
         if self.activity_successors_array[initial_activity][0] != 0:
             for i in self.activity_successors_array[initial_activity]:
@@ -493,8 +475,6 @@ class Gibs:
         :param lft: later final time list
         :return: later final time list calculated
         """
-        self.num_calculate_cpm_backward += 1
-
         lst[size] = lft[size] - self.activity_duration_array[size][0]
         if self.activity_predecessors_array[size][0] != 0:
             for i in self.activity_predecessors_array[size]:
@@ -512,8 +492,6 @@ class Gibs:
         :return: Returns an array of lists, where the first element is the earliest start list and the second element is
         the latest end list
         """
-        self.num_calculate_cpm += 1
-
         self.early_start_time = self.calculate_cpm_foward(est, eft, initial_activity)
         for i in range(0, self.project_size):
             self.early_final_time[i] = self.early_start_time[i] + self.activity_duration_array[i][0]
@@ -536,13 +514,11 @@ class Gibs:
         :param schedule:
         :return: False or True whether or not it violates the deadline, respectively
         """
-        self.num_validation_deadline_activity += 1
-
         value = True
         for i in range(1, self.project_size):
-            pr = self.activity_predecessors_array[i-1]
+            pr = self.activity_predecessors_array[i]
             for j in pr:
-                if schedule[j - 1] < schedule[j-1] + self.activity_duration_array[j-1][0]:
+                if schedule[j - 1] < schedule[j] + self.activity_duration_array[j][0]:
                     value = False
                     break
         return value
@@ -554,8 +530,6 @@ class Gibs:
         :param est: early start time list
         :return: early start time list
         """
-        self.num_validation_path += 1
-
         if self.activity_successors_array[act][0] != 0:
             for i in self.activity_successors_array[act]:
                 if est[i - 1] < est[act] + self.activity_duration_array[act]:
@@ -566,74 +540,14 @@ class Gibs:
     # ======================= #
     #   Auxiliary Functions   #
     # ======================= #
-    def find_neighbour_schedule(self, schedule, s):
-        """
+    def find_max_gradient_neighbour(self):
+        pass
 
-        :param schedule:
-        :return:
-        """
-        self.num_find_neighbour_schedule += 1
-
-        random.seed(s)
-        # draw an activity
-        node = sample(range(0, 13, 1), 1)[0]
-        # activity start and end limit
-        minimum = schedule[node]
-        maximum = self.later_start_time[node]
-        if schedule[node] < maximum:
-            t = schedule[node] + 1
-            # t = sample(range(minimum, maximum, 1), 1)[0]
-            schedule[node] = t
-        # evaluates the new start schedule earlier
-        schedule = self.validation_path(node, schedule)
-        return schedule
-
-    # ================================ #
-    #   Simulated Annealing function   #
-    # ================================ #
-    def simulated_annealing(self, schedule):
-        """
-
-        :param schedule:
-        :return:
-        """
-        self.num_simulated_annealing += 1
-
-        scheduling_sequence = [0]*self.sample_number
-        scheduling_sequence[0] = schedule
-        sequence_p = np.zeros(self.sample_number) #np.zeros(shape=(self.sample_number, self.project_size))
-
-        for t in range(self.sample_number-1, 0, -1):
-            seed = 123 + t
-            n_sched = self.find_neighbour_schedule(schedule, seed)
-            scheduling_sequence[t-1] = n_sched
-
-            npv = self.calculate_net_present_value(schedule)
-            #self.npv_samples[t-1] = n_sched
-            #print(n_sched)
-            nnpv = self.calculate_net_present_value(n_sched)
-            delta = nnpv - npv
-
-            if delta > 0:
-                schedule = n_sched
-                self.npv_samples[t-1] = nnpv
-                est = schedule
-            else:
-#                print(t, np.log10(t+1), 10/np.log10(t+1), np.exp(delta*(10/np.log10(t+1))))
-                s = (10 / np.log10(t+1))
-                p = min(1, np.exp(delta*s))
-                sequence_p[t] = p
-                u = np.random.binomial(1, p)
-                if u == 1:
-                    schedule = n_sched
-                    self.npv_samples[t] = nnpv
-
-        self.npv_samples = self.npv_samples[1:]
-        sequence_p = sequence_p[1:]
-        resp = {'npv': self.npv_samples,
-                'seq': scheduling_sequence,
-                'p': sequence_p}
-        return resp
+    # ============================ #
+    #   Steepest Ascent function   #
+    # ============================ #
+    def steepest_ascent(self):
+        pass
 
     # ================= #
     #   Main function   #
@@ -647,44 +561,10 @@ class Gibs:
         lft = r1['later_final_time']
 
         r2 = self.simulated_annealing(est)
-        print(r2)
-        #for i in r2.keys()
-        sns.scatterplot(data=r2['npv'])
-        plt.xlabel("Indice")
-        plt.ylabel("Net Present Value")
-        plt.savefig('simAnnealing_npv.png')
-
-        prof = {
-            'npv' : self.num_calculate_net_present_value,
-            'cpm' : self.num_calculate_cpm,
-            'cpm_f' : self.num_calculate_cpm_foward,
-            'cpm_b' : self.num_calculate_cpm_backward,
-            'valid_deadline' : self.num_validation_deadline_activity,
-            'valid_path' : self.num_validation_path,
-            'neighbor_schedule' : self.num_find_neighbour_schedule,
-            'sa' : self.num_simulated_annealing
-        }
-        print(prof)
+        sns.relplot(x='Indice', y='Net Present Value', data=r2['npv'])
         end = dt.now()
         execution_time = end - start
         print(execution_time)
 
-#        print(r2['p'])
-#        sns.scatterplot(data=r2['p'])
-#        plt.savefig('simAnnealing_p.png')
-
-
-g = Gibs()
-g.main()
-
-
-# Implementar
-# Criterio de Parada
-# TEMPO DE EXECUÇÃO ( ATÉ ESTABILIZAR )
-
-# Os algoritimos possuem o mesmo desempenho?
-# Apresentar os slides com o resultado da pesquisa
-# Levando em consideração o tempo total de ambos os casos.
-# Número de chamada de cada função para ambos os casos.
-
-
+h = HillClimbing()
+h.main()
