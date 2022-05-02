@@ -393,6 +393,7 @@ class Gibs:
         end = dt.datetime.now()
         totalRunTime = end - start
         print("\nTotal Run Time .......... ", totalRunTime)
+        print("\nMax-NPV ................. ", max(self.npv_samples))
 
 g = Gibs()
 g.main()
