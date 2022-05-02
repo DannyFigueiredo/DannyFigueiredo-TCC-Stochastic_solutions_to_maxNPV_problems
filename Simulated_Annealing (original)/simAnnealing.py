@@ -1,6 +1,8 @@
 import datetime as dt
 import numpy as np
 from random import sample, seed
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 class Gibs:
@@ -292,9 +294,9 @@ class Gibs:
     # ========================================================================= #
     def simulated_annealing(self, schedule):
         """
-
-        :param schedule:
-        :return:
+        Calculates a sample of NPV, according to a draw if scheduling sequences with probability p
+        :param schedule: earliest appointment
+        :return: NPV, scheduling sequence, probability p for each sample
         """
         # variables for algorithm profile description
         self.num_simulated_annealing += 1
@@ -344,40 +346,53 @@ class Gibs:
         # variables for algorithm profile description
         end = dt.datetime.now()
         interval = end - start
-        self.timer_simulated_annealing = self.timer_variation(self.timer_simulated_annealing, interval)
+        self.timer_simulated_annealing = self.time_variation(self.timer_simulated_annealing, interval)
 
         return resp
 
-    # def aux(self):
-    #     resp = 0
-    #     for i in range(0, 10000):
-    #         for j in range(0, 10000):
-    #             resp += (i + j)
-    #     return resp
+    # ========================================================================= #
+    #                                     MAIN                                  #
+    # ========================================================================= #
+    def main(self):
+        start = dt.datetime.now()
 
+        #   1) Calculate scheduling data
+        sch = g.calculate_cpm(g.early_start_time, g.early_final_time)
+        for i in sch.keys():
+            print(i + ' : ', sch[i], '  --> NPV = ', g.calculate_net_present_value(sch[i]))
+        print("\n")
+
+        #   2) Call the Simulated Annealing data
+        sim = g.simulated_annealing(sch['early_start_time'])
+        # print('NPV \t\t\t', sim['npv'][0:10])
+        # print('Seq Schedule \t', sim['seq'][0:10])
+        # print('Probability p \t', sim['p'][0:10])
+        # print("\n")
+
+        #   3) Generate graphs with the results obtained
+        for i in ['npv', 'p']:
+            sns.set()
+            sns.scatterplot(data=sim[i][0:])
+            plt.xlabel('Indice')
+            plt.ylabel(i)
+            fileName = 'simAnnealing_' + i + '.png'
+            plt.savefig(fileName)
+            plt.close()
+
+        #   4) Generate a profile for the functions (time and number of times they were called)
+        print("Function name \t\t Number calls \t Time spent")
+        print("------------------ \t ------------ \t ----------")
+        print("NPV \t\t\t\t", g.num_calculate_net_present_value - 4, "\t\t\t", g.timer_calculate_net_present_value)
+        print("CPM foward \t\t\t", g.num_calculate_cpm_foward, "\t\t\t", g.timer_calculate_cpm_foward)
+        print("CPM backword \t\t", g.num_calculate_cpm_backward, "\t\t\t", g.timer_calculate_cpm_backward)
+        print("CPM \t\t\t\t", g.num_calculate_cpm, "\t\t\t\t", g.timer_calculate_cpm)
+        print("Validation path\t\t", g.num_validation_path, "\t\t\t", g.timer_validation_path)
+        print("Neighbour Schedule \t", g.num_find_neighbour_schedule, "\t\t\t", g.timer_find_neighbour_schedule)
+        print("Simulated Anneling \t", g.num_simulated_annealing, "\t\t\t\t", g.timer_simulated_annealing)
+
+        end = dt.datetime.now()
+        totalRunTime = end - start
+        print("\nTotal Run Time .......... ", totalRunTime)
 
 g = Gibs()
-# timer_zerado = dt.timedelta(0)
-# i = dt.datetime.now()
-
-# print(g.calculate_cpm_foward(g.early_start_time, g.early_final_time))
-# print('timer_f', g.timer_calculate_cpm_foward)
-# print('num_f', g.num_calculate_cpm_foward)
-
-sch = g.calculate_cpm(g.early_start_time, g.early_final_time)
-for i in sch.keys():
-    print(i + ' : ', sch[i])
-    g.calculate_net_present_value(sch[i])
-
-print('timer_f', g.timer_calculate_cpm_foward)
-print('timer_b', g.timer_calculate_cpm_backward)
-print('timer_c', g.timer_calculate_cpm)
-print('timer_npv', g.timer_calculate_net_present_value)
-
-print(g.find_neighbour_schedule(g.early_start_time, 100))
-print('Timer N ', g.timer_find_neighbour_schedule)
-print('Num N ', g.num_find_neighbour_schedule)
-
-# f = dt.datetime.now()
-# timer_zerado = g.time_variation(timer_zerado, (f-i))
-# print(g.early_final_time, ' - ',timer_zerado)
+g.main()
