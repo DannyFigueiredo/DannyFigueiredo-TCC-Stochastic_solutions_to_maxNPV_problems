@@ -357,13 +357,13 @@ class Gibs:
         start = dt.datetime.now()
 
         #   1) Calculate scheduling data
-        sch = g.calculate_cpm(g.early_start_time, g.early_final_time)
+        sch = self.calculate_cpm(self.early_start_time, self.early_final_time)
         for i in sch.keys():
-            print(i + ' : ', sch[i], '  --> NPV = ', g.calculate_net_present_value(sch[i]))
+            print(i + ' : ', sch[i], '  --> NPV = ', self.calculate_net_present_value(sch[i]))
         print("\n")
 
         #   2) Call the Simulated Annealing data
-        sim = g.simulated_annealing(sch['early_start_time'])
+        sim = self.simulated_annealing(sch['early_start_time'])
         # print('NPV \t\t\t', sim['npv'][0:10])
         # print('Seq Schedule \t', sim['seq'][0:10])
         # print('Probability p \t', sim['p'][0:10])
@@ -382,13 +382,13 @@ class Gibs:
         #   4) Generate a profile for the functions (time and number of times they were called)
         print("Function name \t\t Number calls \t Time spent")
         print("------------------ \t ------------ \t ----------")
-        print("NPV \t\t\t\t", g.num_calculate_net_present_value - 4, "\t\t\t", g.timer_calculate_net_present_value)
-        print("CPM foward \t\t\t", g.num_calculate_cpm_foward, "\t\t\t", g.timer_calculate_cpm_foward)
-        print("CPM backword \t\t", g.num_calculate_cpm_backward, "\t\t\t", g.timer_calculate_cpm_backward)
-        print("CPM \t\t\t\t", g.num_calculate_cpm, "\t\t\t\t", g.timer_calculate_cpm)
-        print("Validation path\t\t", g.num_validation_path, "\t\t\t", g.timer_validation_path)
-        print("Neighbour Schedule \t", g.num_find_neighbour_schedule, "\t\t\t", g.timer_find_neighbour_schedule)
-        print("Simulated Anneling \t", g.num_simulated_annealing, "\t\t\t\t", g.timer_simulated_annealing)
+        print("NPV \t\t\t\t", self.num_calculate_net_present_value - 4, "\t\t\t", self.timer_calculate_net_present_value)
+        print("CPM foward \t\t\t", self.num_calculate_cpm_foward, "\t\t\t", self.timer_calculate_cpm_foward)
+        print("CPM backword \t\t", self.num_calculate_cpm_backward, "\t\t\t", self.timer_calculate_cpm_backward)
+        print("CPM \t\t\t\t", self.num_calculate_cpm, "\t\t\t\t", self.timer_calculate_cpm)
+        print("Validation path\t\t", self.num_validation_path, "\t\t\t", self.timer_validation_path)
+        print("Neighbour Schedule \t", self.num_find_neighbour_schedule, "\t\t\t", self.timer_find_neighbour_schedule)
+        print("Simulated Anneling \t", self.num_simulated_annealing, "\t\t\t\t", self.timer_simulated_annealing)
 
         end = dt.datetime.now()
         totalRunTime = end - start
