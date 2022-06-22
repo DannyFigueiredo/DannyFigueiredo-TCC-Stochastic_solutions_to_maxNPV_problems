@@ -359,16 +359,16 @@ class Gibs:
 #                                                    Generate graph                                                    #
 # ==================================================================================================================== #
 def generate_graph(max_npv):
+    plt.scatter(range(1, len(max_npv)+1, 1), max_npv)
+    plt.xlabel('Indices')
+    plt.ylabel('max-NPV')
+    plt.savefig('simAnnealing_maxNPV_scatter.png')
+    plt.close()
     max_npv.sort()
     plt.plot(max_npv)
     plt.xlabel('Indices')
     plt.ylabel('max-NPV')
     plt.savefig('simAnnealing_maxNPV_plot.png')
-    plt.close()
-    plt.scatter(range(1, len(max_npv)+1, 1), max_npv)
-    plt.xlabel('Indices')
-    plt.ylabel('max-NPV')
-    plt.savefig('simAnnealing_maxNPV_scatter.png')
     plt.close()
 
 
